@@ -36,14 +36,18 @@ public class RouteTable {
 	 * @return the matching route entry, null if none exists
 	 */
 	public RouteEntry lookup(int ip) {
+		RouteEntry bestMatch = null;
+
 		synchronized (this.entries) {
 			for (RouteEntry entry : this.entries) {
-				if ((entry.getMaskAddress() & ip) == entry.getGatewayAddress()) {
-					return entry;
+				if ((entry.getMaskAddress() & ip) == (entry.getDestinationAddress() & entry.getMaskAddress())) {
+					if (bestMatch == null || entry.getMaskAddress() > bestMatch.getMaskAddress()) {
+						bestMatch = entry;
+					}
 				}
 			}
-			return null;
 		}
+		return bestMatch;
 	}
 
 	/**
