@@ -132,7 +132,7 @@ public class Router extends Device {
 		if (routeEntry == null) return;
 
 		// Get new MAC addresses
-		MACAddress newDestMac = arpCache.lookup(routeEntry.getDestinationAddress()).getMac();
+		MACAddress newDestMac = arpCache.lookup(routeEntry.getGatewayAddress()).getMac();
 		MACAddress newSourceMac = routeEntry.getInterface().getMacAddress();
 
 		// Update MAC headers
