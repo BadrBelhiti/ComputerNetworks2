@@ -117,6 +117,7 @@ public class Router extends Device {
 
 		// Decrement TTL
 		payload.setTtl(--currTTL);
+		payload.resetChecksum();
 
 		/* Check router interface destinations (i.e. drop packets destined to this router) */
 		for (Iface iface : getInterfaces().values()) {
@@ -129,10 +130,17 @@ public class Router extends Device {
 		RouteEntry routeEntry = routeTable.lookup(payload.getDestinationAddress());
 
 		// Drop packets with no route in route table
-		if (routeEntry == null) return;
+		if (routeEntry == null || routeEntry.getInterface() == inIface) return;
 
 		// Get new MAC addresses
-		MACAddress newDestMac = arpCache.lookup(routeEntry.getGatewayAddress()).getMac();
+		int nextHop = routeEntry.getGatewayAddress();
+		if (nextHop == 0) {
+			nextHop = payload.getDestinationAddress();
+		}
+		ArpEntry arpEntry = arpCache.lookup(nextHop);
+		if (arpEntry == null) return;
+
+		MACAddress newDestMac = arpEntry.getMac();
 		MACAddress newSourceMac = routeEntry.getInterface().getMacAddress();
 
 		// Update MAC headers

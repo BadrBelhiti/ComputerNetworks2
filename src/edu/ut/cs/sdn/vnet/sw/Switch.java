@@ -22,6 +22,7 @@ public class Switch extends Device {
 	 */
 	public Switch(String host, DumpFile logfile) {
 		super(host, logfile);
+		this.switchTable = new HashMap<>();
 	}
 
 	/**
@@ -34,25 +35,23 @@ public class Switch extends Device {
 		System.out.println("*** -> Received packet: " +
 				etherPacket.toString().replace("\n", "\n\t"));
 
+		switchTable.put(etherPacket.getSourceMAC(), new CachableEntry(inIface));
+
 		CachableEntry entry = switchTable.get(etherPacket.getDestinationMAC());
 		if (entry != null && !entry.isExpired()) {
 			entry.resetExpirationTime();
-			if (entry.getIface() != inIface) {
-				sendPacket(etherPacket, entry.getIface());
-			}
+			sendPacket(etherPacket, entry.getIface());
 		} else {
 			if (entry != null) {
 				switchTable.remove(etherPacket.getDestinationMAC());
 			}
+
 			for (Iface iface : interfaces.values()) {
 				if (iface != inIface) {
 					sendPacket(etherPacket, iface);
 				}
 			}
 		}
-
-		switchTable.put(etherPacket.getSourceMAC(), new CachableEntry(inIface));
-
 	}
 
 	private class CachableEntry {
