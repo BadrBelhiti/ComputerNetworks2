@@ -1,16 +1,19 @@
 package edu.ut.cs.sdn.vnet.sw;
 
 import net.floodlightcontroller.packet.Ethernet;
+import net.floodlightcontroller.packet.MACAddress;
 import edu.ut.cs.sdn.vnet.Device;
 import edu.ut.cs.sdn.vnet.DumpFile;
 import edu.ut.cs.sdn.vnet.Iface;
+
+import java.util.HashMap;
 
 /**
  * @author Aaron Gember-Jacobson
  */
 public class Switch extends Device {
 
-	private HashMap<CachableMACAddress, Iface> switchTable;
+	private HashMap<MACAddress, CachableEntry> switchTable;
 
 	/**
 	 * Creates a router for a specific host.
@@ -52,30 +55,25 @@ public class Switch extends Device {
 
 	}
 
-}
+	private class CachableEntry {
+		private Iface outIface;
+		private long expirationTime;
 
-private class CachableEntry {
-	private IFace outIface;
-	private long expirationTime;
+		public CachableEntry(Iface iface) {
+			this.outIface = iface;
+			this.expirationTime = System.currentTimeMillis() + 15000; // 15 seconds from the current time
+		}
 
-	public CachableEntry(Iface iface) {
-		this.outIface = iface;
-		this.expirationTime = System.currentTimeMillis() + 15000; // 15 seconds from the current time
-	}
+		public Iface getIface() {
+			return outIface;
+		}
 
-	public MACAddress getIFace() {
-		return outIface;
-	}
+		public boolean isExpired() {
+			return System.currentTimeMillis() > expirationTime;
+		}
 
-	public long getExpirationTime() {
-		return expirationTime;
-	}
-
-	public boolean isExpired() {
-		return System.currentTimeMillis() > expirationTime;
-	}
-
-	public void resetExpirationTime() {
-		expirationTime = System.currentTimeMillis() + 15000;
+		public void resetExpirationTime() {
+			expirationTime = System.currentTimeMillis() + 15000;
+		}
 	}
 }
