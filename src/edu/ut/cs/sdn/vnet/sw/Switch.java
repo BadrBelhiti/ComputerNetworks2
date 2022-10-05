@@ -35,17 +35,23 @@ public class Switch extends Device {
 		System.out.println("*** -> Received packet: " +
 				etherPacket.toString().replace("\n", "\n\t"));
 
+		// Learn MAC and port
 		switchTable.put(etherPacket.getSourceMAC(), new CachableEntry(inIface));
 
+		// Look for entry in switch table
 		CachableEntry entry = switchTable.get(etherPacket.getDestinationMAC());
+
+		// If destination exists in switch table
 		if (entry != null && !entry.isExpired()) {
 			entry.resetExpirationTime();
 			sendPacket(etherPacket, entry.getIface());
 		} else {
+			// If entry is expired
 			if (entry != null) {
 				switchTable.remove(etherPacket.getDestinationMAC());
 			}
 
+			// Broadcast
 			for (Iface iface : interfaces.values()) {
 				if (iface != inIface) {
 					sendPacket(etherPacket, iface);

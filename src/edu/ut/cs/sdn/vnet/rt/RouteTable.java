@@ -40,7 +40,9 @@ public class RouteTable {
 		synchronized (this.entries) {
 			RouteEntry bestMatch = null;
 			for (RouteEntry entry : this.entries) {
+				// Find match
 				if ((entry.getMaskAddress() & ip) == (entry.getDestinationAddress() & entry.getMaskAddress())) {
+					// Find longest prefix match
 					if (bestMatch == null || entry.getMaskAddress() > bestMatch.getMaskAddress()) {
 						bestMatch = entry;
 					}
