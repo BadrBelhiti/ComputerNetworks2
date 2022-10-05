@@ -88,26 +88,13 @@ public class Router extends Device {
 			return;
 
 		IPv4 payload = (IPv4) etherPacket.getPayload();
-		int headerLength = payload.getHeaderLength(); // Length in 4-byte words
+
+		int checksum = payload.getChecksum();
+		payload.resetChecksum();
 		byte[] serializedData = payload.serialize();
-		ByteBuffer bb = ByteBuffer.wrap(serializedData);
-
-		/* Handle checksum */
-		// Zero out checksum in header
-		serializedData[10] = 0;
-		serializedData[11] = 0;
-
-		// Compute checksum
-		int accumulation = 0;
-		for (int i = 0; i < headerLength * 2; ++i) {
-			accumulation += 0xffff & bb.getShort();
-		}
-		accumulation = ((accumulation >> 16) & 0xffff) + (accumulation & 0xffff);
-
-		int computedChecksum = (short) (~accumulation & 0xffff);
-
-		// Drop packet if checksum is invalid
-		if (computedChecksum != payload.getChecksum()) return;
+		payload.deserialize(serializedData, 0, serializedData.length);
+		int newChecksum = payload.getChecksum();
+		if (checksum != newChecksum) return;
 
 		/* Handle TTL */
 		byte currTTL = payload.getTtl();

@@ -36,9 +36,9 @@ public class RouteTable {
 	 * @return the matching route entry, null if none exists
 	 */
 	public RouteEntry lookup(int ip) {
-		RouteEntry bestMatch = null;
 
 		synchronized (this.entries) {
+			RouteEntry bestMatch = null;
 			for (RouteEntry entry : this.entries) {
 				if ((entry.getMaskAddress() & ip) == (entry.getDestinationAddress() & entry.getMaskAddress())) {
 					if (bestMatch == null || entry.getMaskAddress() > bestMatch.getMaskAddress()) {
@@ -46,8 +46,8 @@ public class RouteTable {
 					}
 				}
 			}
+			return bestMatch;
 		}
-		return bestMatch;
 	}
 
 	/**
